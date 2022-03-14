@@ -24,7 +24,13 @@ export class AuthController{
 		POST /auth/sigin
 	*/
 	@Post('signin')
-	signin() {
-		return this.authService.signin();
+	signin(@Body(new ValidationPipe({
+		/*
+			whitelist strips out any fields in the body request that are not defined
+			by our DTO 
+		*/
+		whitelist: true,
+	})) dto: AuthDto) {
+		return this.authService.signin(dto);
 	}
 }
