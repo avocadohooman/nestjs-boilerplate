@@ -11,9 +11,14 @@ export class AuthController{
 		POST /auth/signup
 	*/
 	@Post('signup')
-	signup(@Body(new ValidationPipe()) dto: AuthDto) {
-		console.log('dto', dto);
-		return this.authService.signup();
+	signup(@Body(new ValidationPipe({
+		/*
+			whitelist strips out any fields in the body request that are not defined
+			by our DTO 
+		*/
+		whitelist: true,
+	})) dto: AuthDto) {
+		return this.authService.signup(dto);
 	}
 	/*
 		POST /auth/sigin
