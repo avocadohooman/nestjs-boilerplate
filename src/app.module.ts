@@ -5,9 +5,10 @@ import { BookmarkModule } from './bookmark/bookmark.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { DatabaseModule } from './database/database.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [AuthModule, UserModule, BookmarkModule, DatabaseModule],
+  imports: [AuthModule, UserModule, BookmarkModule, DatabaseModule, ConfigModule.forRoot({isGlobal: true})],
   controllers: [AuthController],
   providers: [AuthService],
 })
