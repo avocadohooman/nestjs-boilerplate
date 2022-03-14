@@ -7,7 +7,7 @@ services:
     container_name: boilerplate-db
     restart: on-failure
     ports:
-      - "5432:5432"
+      - "6666:6666"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres2021
@@ -18,7 +18,7 @@ services:
     container_name: boilerplate-db-test
     restart: on-failure
     ports:
-      - "6432:6432"
+      - "6677:6677"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres2021
