@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import { DatabaseService } from "../database/database.service";
 
-@Injectable({})
-
+@Injectable()
 export class AuthService{
 
+	constructor(private prismaService: DatabaseService) {}
 	/*
 		Service for POST /auth/signup controller
 	*/
