@@ -3,12 +3,17 @@ import { Injectable } from "@nestjs/common";
 @Injectable({})
 
 export class AuthService{
-	
-	login() {
 
+	/*
+		Service for POST /auth/signup controller
+	*/
+	signup() {
+		return 'i am signup';
 	}
-
-	signUp() {
-
+	/*
+		Service for POST /auth/signin controller
+	*/
+	signin() {
+		return 'i am signin';
 	}
 }
