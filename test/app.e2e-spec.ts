@@ -88,13 +88,30 @@ describe('App e2e', () => {
 					.post(`/auth/signin `)
 					.withBody(dto)
 					.expectStatus(200)
+					.stores('userToken', 'access_token');
 			});
 		});
 	});
 
 	describe('User', () => {
 		describe('GetMe', () => {
+			it('should get current user info', () => {
+				return pactum.spec()
+					.get(`/users/me`)
+					/*
+						Adding S to $S{} to access the pactum storage
+					*/
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.expectStatus(200)
+			});
 
+			it('should throw error if token has been not provided', () => {
+				return pactum.spec()
+					.get(`/users/me`)
+					.expectStatus(401)
+			});
 		});
 		describe('EditUser', () => {
 
@@ -111,10 +128,10 @@ describe('App e2e', () => {
 		describe('Get Bookmark by Id', () => {
 
 		});
-		describe('Delete Bookmark', () => {
+		describe('Delete Bookmark by id', () => {
 
 		});
-		describe('Edit Bookmark', () => {
+		describe('Edit Bookmark by id', () => {
 
 		});
 	}); 
