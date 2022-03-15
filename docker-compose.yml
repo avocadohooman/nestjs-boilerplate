@@ -7,7 +7,7 @@ services:
     container_name: boilerplate-db
     restart: on-failure
     ports:
-      - "6666:6666"
+      - 5434:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=TheAnswerIsPosgres42!
@@ -18,7 +18,7 @@ services:
     container_name: boilerplate-db-test
     restart: on-failure
     ports:
-      - "6677:6677"
+      - 5435:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=TheAnswerIsPosgres42!
