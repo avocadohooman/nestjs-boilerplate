@@ -16,4 +16,14 @@ export class DatabaseService extends PrismaClient {
 			}
 		})
 	}
+
+	cleanDb() {
+		/*
+			$transaction allows to pipe queries in a specific order
+		*/
+		return this.$transaction([
+			this.bookmark.deleteMany(),
+			this.user.deleteMany(),
+		]);
+	}
 }
