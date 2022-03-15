@@ -4,6 +4,7 @@ import { DatabaseService } from '../src/database/database.service';
 import { AppModule } from '../src/app.module';
 import * as pactum from 'pactum';
 import { AuthDto } from '../src/auth/dto';
+import { EditUserDto } from '../src/user/dto';
 
 describe('App e2e', () => {
 	let app: INestApplication;
@@ -114,7 +115,22 @@ describe('App e2e', () => {
 			});
 		});
 		describe('EditUser', () => {
-
+			it('should edit the user', () => {
+				const editDto: EditUserDto = {
+					firstName: 'Gerhard',
+					lastName: 'Molin',
+				}
+				return pactum
+					.spec()
+					.patch(`/users/edit`)
+					.withBody(editDto)
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.expectStatus(200)
+					.expectBodyContains(editDto.firstName)
+					.expectBodyContains(editDto.lastName)
+			});
 		});
 	});
 
