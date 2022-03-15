@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, ValidationPipe } from '@nestjs/common';
 import { GetUser } from '../auth/decorator';
 import { JwtGuard } from '../auth/guard';
 import { BookmarkService } from './bookmark.service';
@@ -36,11 +36,11 @@ export class BookmarkController {
 		@Param('id', ParseIntPipe) bookmarkId: number,
 		@Body(new ValidationPipe({whitelist: true})) dto: EditBookmarkDto
 	) {
-		console.log('dto', dto);
 		return this.bookmarkService.editBookmarkById(userId, bookmarkId, dto);
 
 	}
 
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete('delete/:id')
 	deleteBookmarkById(
 		@GetUser('id') userId: number,

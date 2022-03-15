@@ -5,7 +5,7 @@ import { AppModule } from '../src/app.module';
 import * as pactum from 'pactum';
 import { AuthDto } from '../src/auth/dto';
 import { EditUserDto } from '../src/user/dto';
-import { CreateBookmarkDto } from 'src/bookmark/dto';
+import { CreateBookmarkDto, EditBookmarkDto } from 'src/bookmark/dto';
 
 describe('App e2e', () => {
 	let app: INestApplication;
@@ -136,6 +136,12 @@ describe('App e2e', () => {
 	});
 
 	describe('Bookmark', () => {
+		const createBookmark: CreateBookmarkDto = {
+			title: 'NestJS 101',
+			description: 'a tutorial',
+			link: 'https://www.youtube.com/watch?v=GHTA143_b-s',
+		}
+
 		describe('Get empty bookmarks', () => {
 			it('should returns empty array of bookmarks', () => {
 				return pactum
@@ -148,13 +154,9 @@ describe('App e2e', () => {
 					.expectBodyContains([])
 			});
 		});
+
 		describe('Create Bookmark', () => {
 			it('should create a bookmark', () => {
-				const createBookmark: CreateBookmarkDto = {
-					title: 'NestJS 101',
-					description: 'a tutorial',
-					link: 'https://www.youtube.com/watch?v=GHTA143_b-s',
-				}
 				return pactum
 					.spec() 
 					.post(`/bookmarks/create`)
@@ -164,19 +166,81 @@ describe('App e2e', () => {
 					.withBody(createBookmark)
 					.expectStatus(201)
 					.expectBodyContains(createBookmark.title)
+					.stores('bookmarkId', 'id');
 			})
 		});
+
 		describe('Get Bookmarks', () => {
-
+			it('should return the created bookmark', () => {
+				return pactum
+					.spec() 
+					.get(`/bookmarks`)
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.expectStatus(200)
+					.expectBodyContains(createBookmark.title)
+					.expectBodyContains(createBookmark.link)
+					.expectBodyContains(createBookmark.description)
+			});
 		});
+
 		describe('Get Bookmark by Id', () => {
-
+			it('should get one specific bookmark', () => {
+				return pactum
+					.spec() 
+					.get(`/bookmarks/{id}`)
+					.withPathParams('id', '$S{bookmarkId}')
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.expectStatus(200)
+					.expectBodyContains(createBookmark.title)
+					.expectBodyContains(createBookmark.link)
+					.expectBodyContains(createBookmark.description)
+			});
 		});
-		describe('Delete Bookmark by id', () => {
-
-		});
+		
 		describe('Edit Bookmark by id', () => {
+			it('should edit bookmark by id', () => {
+				const updatedBookmark: EditBookmarkDto = { title: 'A NestJs Tutorial!'};
+				return pactum
+					.spec() 
+					.patch(`/bookmarks/edit/{id}`)  
+					.withPathParams('id', '$S{bookmarkId}')
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.withBody(updatedBookmark)
+					.expectStatus(200)
+					.expectBodyContains(updatedBookmark.title)
+					.expectBodyContains(createBookmark.link)
+					.expectBodyContains(createBookmark.description) 
+			});
+		});
 
+		describe('Delete Bookmark by id', () => {
+			it('should delete bookmark by id', () => {
+				return pactum
+					.spec() 
+					.delete(`/bookmarks/delete/{id}`)  
+					.withPathParams('id', '$S{bookmarkId}')
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.expectStatus(204)
+			});
+
+			it('should returns empty array of bookmarks', () => {
+				return pactum
+					.spec() 
+					.get(`/bookmarks`)
+					.withHeaders({
+						Authorization: `Bearer $S{userToken}`
+					})
+					.expectStatus(200)
+					.expectBodyContains([])
+			});
 		});
 	}); 
 });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
 
@@ -16,7 +16,6 @@ export class BookmarkService {
 	}
 
 	async createBookmark(userId: number, dto: CreateBookmarkDto) {
-		console.log('dto', dto);
 		try {
 			const bookmark = await this.databaseService.bookmark.create({
 				data: {
@@ -31,10 +30,43 @@ export class BookmarkService {
 	}
 
 	async getBookmarkById(userId: number, bookmarkId: number) {
-
+		const bookmark = await this.databaseService.bookmark.findFirst({
+			where: {
+				id: bookmarkId,
+				userId: userId
+			}
+		})
+		return bookmark;
 	}
 
-	async editBookmarkById(userId: number, bookmarkId: number, dto: EditBookmarkDto){}
+	async editBookmarkById(userId: number, bookmarkId: number, dto: EditBookmarkDto) {
+		const bookmark = await this.databaseService.bookmark.findUnique({
+			where: {
+				id: bookmarkId,
+			}
+		})
+		if (!bookmark || bookmark.userId !== userId) throw new ForbiddenException('access to resource denied');
+		return this.databaseService.bookmark.update({
+			where: {
+				id: bookmarkId,
+			},
+			data: {
+				...dto
+			}
+		});
+	}
 
-	async deleteBookmarkById(userId: number, bookmarkId: number){}
+	async deleteBookmarkById(userId: number, bookmarkId: number) {
+		const bookmark = await this.databaseService.bookmark.findUnique({
+			where: {
+				id: bookmarkId,
+			}
+		})
+		if (!bookmark || bookmark.userId !== userId) throw new ForbiddenException('access to resource denied');
+		return this.databaseService.bookmark.delete({
+			where: {
+				id: bookmarkId
+			}
+		});
+	}
 }
