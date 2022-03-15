@@ -2,10 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import { DatabaseService } from "src/database/database.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt',) {
-	constructor(config: ConfigService) {
+	constructor(config: ConfigService, private database: DatabaseService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,
@@ -13,7 +14,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt',) {
 		})
 	}
 
-	async validate(payload: any) {
-		return {userId: payload.sub, email: payload.email}
+	async validate(payload: {sub: number, email: string}) {
+		const userInDb = await this.database.user.findUnique({
+			where: {
+				id: payload.sub,
+			}
+		});
+		delete userInDb.hash;
+		return userInDb;
 	}
 }
