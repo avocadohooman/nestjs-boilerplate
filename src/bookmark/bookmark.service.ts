@@ -2,6 +2,7 @@ import { ForbiddenException, Inject, Injectable, CACHE_MANAGER } from '@nestjs/c
 import { DatabaseService } from '../database/database.service';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
 import { Cache } from 'cache-manager';
+import { cachedBookmarkKey } from './cache.config';
 
 @Injectable()
 export class BookmarkService {
@@ -10,24 +11,12 @@ export class BookmarkService {
 		@Inject(CACHE_MANAGER) private cacheManager: Cache){}
 
 	async getBookmarks(userId: number) {
-		const cachedBookmarksKey = 'cached-bookmarks';
-		const cachecBookmarks = await this.cacheManager.get(cachedBookmarksKey);
-		if (cachecBookmarks) {
-			return {
-				data: cachecBookmarks,
-				from: 'redis-cache',
-			};
-		}
 		const bookmarks = await this.databaseService.bookmark.findMany({
 			where: {
 				userId: userId,
 			}
 		});
-		await this.cacheManager.set(cachedBookmarksKey, bookmarks, {ttl: 300});
-		return {
-			data: bookmarks,
-			from: 'db',
-		};
+		return bookmarks;
 	}
 
 	async createBookmark(userId: number, dto: CreateBookmarkDto) {
@@ -38,6 +27,7 @@ export class BookmarkService {
 					...dto,
 				}
 			});
+			await this.cacheManager.del(cachedBookmarkKey);
 			return bookmark;
 		} catch (error) {
 			throw error;
@@ -78,6 +68,7 @@ export class BookmarkService {
 			}
 		})
 		if (!bookmark || bookmark.userId !== userId) throw new ForbiddenException('access to resource denied');
+		await this.cacheManager.del(cachedBookmarkKey);
 		return this.databaseService.bookmark.delete({
 			where: {
 				id: bookmarkId
