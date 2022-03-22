@@ -1,18 +1,33 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, CACHE_MANAGER } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class BookmarkService {
-	constructor(private databaseService: DatabaseService){}
+	constructor(
+		private databaseService: DatabaseService, 
+		@Inject(CACHE_MANAGER) private cacheManager: Cache){}
 
 	async getBookmarks(userId: number) {
+		const cachedBookmarksKey = 'cached-bookmarks';
+		const cachecBookmarks = await this.cacheManager.get(cachedBookmarksKey);
+		if (cachecBookmarks) {
+			return {
+				data: cachecBookmarks,
+				from: 'redis-cache',
+			};
+		}
 		const bookmarks = await this.databaseService.bookmark.findMany({
 			where: {
 				userId: userId,
 			}
 		});
-		return bookmarks;
+		await this.cacheManager.set(cachedBookmarksKey, bookmarks, {ttl: 300});
+		return {
+			data: bookmarks,
+			from: 'db',
+		};
 	}
 
 	async createBookmark(userId: number, dto: CreateBookmarkDto) {
